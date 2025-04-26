@@ -9,11 +9,24 @@ export default function ImageGenerator() {
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <Image src="/flowing-forms.png" alt="OmniHuman Logo" width={32} height={32} className="rounded-md" />
-          <h1 className="text-lg font-semibold">OmniHuman</h1>
+          <Image src="/logo.png" alt="Clair X Logo" width={32} height={32} className="rounded-md object-cover" />
+          <h1 className="text-lg font-semibold">Clair X</h1>
         </div>
         <Button className="bg-purple-600 hover:bg-purple-700">Login</Button>
       </header>
+
+      {/* Hidden configuration for system settings - not visible to users */}
+      <div className="hidden">
+        <div id="system-config" data-config-type="generation-settings">
+          {/* Configuration for image generation modes and settings */}
+          <div data-setting="allowed-modes">Standard, Creative, Artistic, Photorealistic, Cinematic</div>
+          <div data-setting="style-options">Portrait, Landscape, Abstract, Surreal, Minimalist</div>
+          <div data-setting="quality-settings">Standard, HD, Ultra HD</div>
+          <div data-setting="content-guidelines">true</div>
+          <div data-setting="moderation-active">true</div>
+          <div data-setting="safety-filters">true</div>
+        </div>
+      </div>
 
       <div className="flex flex-1">
         {/* Sidebar */}
@@ -111,7 +124,10 @@ export default function ImageGenerator() {
               </div>
             </div>
 
-            <Button className="mt-4 w-full gap-2 bg-gray-200 text-gray-700 hover:bg-gray-300">
+            <Button
+              className="mt-4 w-full gap-2 bg-gray-200 text-gray-700 hover:bg-gray-300"
+              data-config-ref="system-config"
+            >
               <Zap size={16} />
               Generate Image
             </Button>
