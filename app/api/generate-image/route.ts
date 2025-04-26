@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+
+// Initialize the Google Generative AI client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
 export async function POST(request: Request) {
+  // Check authentication
+  const cookieStore = cookies()
+  const sessionCookie =
+    cookieStore.get("next-auth.session-token") || cookieStore.get("__Secure-next-auth.session-token")
+
+  if (!sessionCookie) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+  }
+
   try {
     const data = await request.json()
     const { prompt, style, aspectRatio, numberOfOutputs } = data
@@ -21,16 +35,58 @@ export async function POST(request: Request) {
       )
     }
 
-    // In a real implementation, this would call an AI image generation API
-    // For now, we'll return a placeholder response
-    return NextResponse.json({
-      success: true,
-      images: Array(numberOfOutputs || 1).fill({
-        url: `/placeholder.svg?height=512&width=512&query=${encodeURIComponent(prompt)}`,
+    // Enhance the prompt with style information if not set to "auto"
+    let enhancedPrompt = prompt
+    if (style !== "auto") {
+      enhancedPrompt = `${prompt} in ${style} style`
+    }
+
+    // Determine dimensions based on aspect ratio
+    let width = 512
+    let height = 512
+
+    switch (aspectRatio) {
+      case "3:2":
+        width = 600
+        height = 400
+        break
+      case "4:3":
+        width = 640
+        height = 480
+        break
+      case "16:9":
+        width = 640
+        height = 360
+        break
+      case "9:16":
+        width = 360
+        height = 640
+        break
+    }
+
+    // Generate images
+    const images = []
+    for (let i = 0; i < numberOfOutputs; i++) {
+      // Create a unique seed for each image
+      const seed = Math.floor(Math.random() * 1000000)
+
+      // In a real implementation, this would call the Gemini API
+      // For now, we'll use placeholder images
+      const imageUrl = `/placeholder.svg?height=${height}&width=${width}&query=${encodeURIComponent(
+        enhancedPrompt + " " + seed,
+      )}`
+
+      images.push({
+        url: imageUrl,
         prompt,
         style,
         aspectRatio,
-      }),
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      images,
     })
   } catch (error) {
     console.error("Error generating image:", error)
