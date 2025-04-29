@@ -3,6 +3,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import type { GenerateImageParams, GeneratedImage } from "./types"
 
+// Define available Gemini models in order of preference
+const GEMINI_MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
@@ -16,8 +19,28 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
       enhancedPrompt = `${prompt} in ${style} style`
     }
 
-    // Get the Gemini model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" })
+    // Try each model in order until one works
+    let model = null
+    let usedModel = ""
+
+    for (const modelName of GEMINI_MODELS) {
+      try {
+        console.log(`Trying to use Gemini model: ${modelName}`)
+        model = genAI.getGenerativeModel({ model: modelName })
+        // Test if the model works
+        await model.generateContent("Test")
+        usedModel = modelName
+        console.log(`Successfully using Gemini model: ${modelName}`)
+        break
+      } catch (error) {
+        console.error(`Error with model ${modelName}:`, error)
+        // Continue to the next model
+      }
+    }
+
+    if (!model) {
+      throw new Error("No available Gemini models found")
+    }
 
     // Determine dimensions based on aspect ratio
     let width = 1024
@@ -42,27 +65,25 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
         break
     }
 
-    // Generate images using Gemini
+    // Generate images using the available Gemini model
     const results = await Promise.all(
       Array(numberOfOutputs)
         .fill(0)
         .map(async (_, i) => {
-          // For Gemini, we need to use the text generation capabilities
-          // and then convert the result to an image
-          const result = await model.generateContent(enhancedPrompt)
-          const response = await result.response
-          const text = response.text()
-
-          // Since Gemini doesn't directly generate images via API yet,
-          // we'll use a placeholder with the prompt for demonstration
-          // In a real implementation, you would use the Gemini response to guide image generation
-
           // Create a unique seed for each image
           const seed = Math.floor(Math.random() * 1000000)
 
-          // Create a placeholder image URL with the prompt and style
+          // For Gemini, we need to use the text generation capabilities
+          // with a prompt that describes the image we want
+          const generationPrompt = `Create a detailed description for an image of: ${enhancedPrompt}. Seed: ${seed}.`
+
+          const result = await model.generateContent(generationPrompt)
+          const response = await result.response
+          const description = response.text()
+
+          // Use the description to create a placeholder image
           const imageUrl = `/placeholder.svg?height=${height}&width=${width}&query=${encodeURIComponent(
-            enhancedPrompt + " " + seed,
+            description || enhancedPrompt,
           )}`
 
           return {
@@ -70,6 +91,8 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
             prompt,
             style,
             aspectRatio,
+            description: description || enhancedPrompt,
+            model: usedModel,
           }
         }),
     )
@@ -129,6 +152,8 @@ export async function generateImageFallback(params: GenerateImageParams): Promis
       prompt,
       style,
       aspectRatio,
+      description: `Placeholder image for: ${prompt} in ${style} style`,
+      model: "fallback",
     })
   }
 

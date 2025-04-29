@@ -56,6 +56,7 @@ const config: Config = {
           purple: "hsl(var(--neon-purple))",
           pink: "hsl(var(--neon-pink))",
           blue: "hsl(var(--neon-blue))",
+          cyan: "hsl(var(--neon-cyan))",
         },
       },
       borderRadius: {
@@ -97,6 +98,14 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.7" },
         },
+        "text-glow": {
+          "0%, 100%": {
+            textShadow: "0 0 8px hsl(var(--neon-purple)), 0 0 12px hsl(var(--neon-purple))",
+          },
+          "50%": {
+            textShadow: "0 0 16px hsl(var(--neon-pink)), 0 0 24px hsl(var(--neon-pink))",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -104,6 +113,7 @@ const config: Config = {
         "spin-glow": "spin-glow 2s linear infinite",
         "pulse-glow": "pulse-glow 2s infinite",
         "pulse-opacity": "pulse-opacity 2s infinite",
+        "text-glow": "text-glow 3s infinite",
       },
     },
   },

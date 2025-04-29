@@ -13,4 +13,6 @@ export interface GeneratedImage {
   prompt: string
   style: ImageStyle
   aspectRatio: AspectRatio
+  description?: string
+  model?: string
 }

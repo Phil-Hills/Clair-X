@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ImageIcon, Zap, Download, Trash2, AlertCircle } from "lucide-react"
+import { ImageIcon, Zap, Download, Trash2, AlertCircle, Info, Settings } from "lucide-react"
 import type { AspectRatio, GeneratedImage, ImageStyle } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -12,6 +12,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { ChatBubble } from "@/components/ui/chat-bubble"
+import { generateImages } from "@/lib/image-service"
+import Link from "next/link"
+import ApiKeyManagement from "./api-key-management"
+// Add the import for ApiKeyStatus
+import ApiKeyStatus from "./api-key-status"
 
 interface ImageGeneratorProps {
   user: {
@@ -40,6 +45,11 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
   const [history, setHistory] = useState<GeneratedImage[]>([])
   const [activeTab, setActiveTab] = useState("generator")
   const [error, setError] = useState<string | null>(null)
+  const [apiStatus, setApiStatus] = useState<{
+    isConfigured: boolean
+    model?: string
+  }>({ isConfigured: false })
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: "1",
@@ -49,6 +59,50 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
       isNew: false,
     },
   ])
+
+  // Check if Gemini API key is configured
+  useEffect(() => {
+    const checkApiStatus = async () => {
+      try {
+        const response = await fetch("/api/check-api-status")
+        if (response.ok) {
+          const data = await response.json()
+          setApiStatus({
+            isConfigured: data.geminiAvailable,
+            model: data.model,
+          })
+
+          // If API is not configured, show a toast notification
+          if (!data.geminiAvailable) {
+            toast({
+              title: "API Key Not Configured",
+              description: "Gemini API key is not configured. Using placeholder images instead.",
+              duration: 5000,
+            })
+          }
+        } else {
+          setApiStatus({ isConfigured: false })
+        }
+      } catch (error) {
+        console.error("Error checking API status:", error)
+        setApiStatus({ isConfigured: false })
+      }
+    }
+
+    checkApiStatus()
+  }, [toast])
+
+  const handleApiStatusChange = (status: { isConfigured: boolean; model?: string }) => {
+    setApiStatus(status)
+    setShowApiKeySetup(false)
+
+    if (status.isConfigured) {
+      toast({
+        title: "API Key Configured",
+        description: `Gemini API is now configured and ready to use with model: ${status.model || "Gemini"}`,
+      })
+    }
+  }
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return
@@ -67,44 +121,69 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
     setChatMessages((prev) => [...prev, userMessage])
 
     try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt,
-          style,
-          numberOfOutputs: numOutputs,
-          aspectRatio,
-        }),
+      // Call the image generation service
+      const images = await generateImages({
+        prompt,
+        style,
+        numberOfOutputs: numOutputs,
+        aspectRatio,
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to generate images")
+      console.log("Generated images:", images)
+
+      if (images && images.length > 0) {
+        setGeneratedImages(images)
+        setHistory((prev) => [...images, ...prev])
+
+        // Check if we're using fallback images
+        const isFallback = images.some((img) => img.model === "fallback")
+
+        // Add AI response to chat
+        const aiMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          content: isFallback
+            ? `I've created ${images.length} placeholder image${images.length > 1 ? "s" : ""} based on your prompt. Note: Using fallback mode as the API key is invalid or not configured.`
+            : `I've created ${images.length} image${images.length > 1 ? "s" : ""} based on your prompt.`,
+          sender: "ai",
+          timestamp: new Date().toLocaleTimeString(),
+          isNew: true,
+        }
+        setChatMessages((prev) => [...prev, aiMessage])
+
+        // If we're using fallback images due to API key issues, show a toast
+        if (isFallback) {
+          // Check if there was a stored API key that's now invalid
+          const hadStoredKey = localStorage.getItem("GEMINI_API_KEY")
+          if (hadStoredKey) {
+            // The key was removed by the image service because it was invalid
+            toast({
+              title: "API Key Issue",
+              description:
+                "Your API key appears to be invalid and has been removed. Please configure a valid API key in settings.",
+              variant: "destructive",
+              duration: 8000,
+            })
+            // Update API status
+            setApiStatus({ isConfigured: false })
+          } else {
+            toast({
+              title: "Using Placeholder Images",
+              description: "No valid API key configured. Using placeholder images instead.",
+              duration: 5000,
+            })
+          }
+        } else {
+          toast({
+            title: "Images generated successfully",
+            description: `Created ${images.length} image${images.length > 1 ? "s" : ""} based on your prompt.`,
+          })
+        }
+      } else {
+        throw new Error("No images were generated")
       }
-
-      const data = await response.json()
-      setGeneratedImages(data.images)
-      setHistory((prev) => [...data.images, ...prev])
-
-      // Add AI response to chat
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: `I've created ${data.images.length} image${data.images.length > 1 ? "s" : ""} based on your prompt.`,
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-        isNew: true,
-      }
-      setChatMessages((prev) => [...prev, aiMessage])
-
-      toast({
-        title: "Images generated successfully",
-        description: `Created ${data.images.length} image${data.images.length > 1 ? "s" : ""} based on your prompt.`,
-      })
     } catch (error) {
       console.error("Error generating images:", error)
-      setError("Failed to generate images. Please try again.")
+      setError(`Failed to generate images: ${error instanceof Error ? error.message : String(error)}`)
 
       // Add error message to chat
       const errorMessage: ChatMessage = {
@@ -175,6 +254,24 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
     )
   }
 
+  // Get the display name for the model
+  const getModelDisplayName = () => {
+    if (!apiStatus.isConfigured || !apiStatus.model) {
+      return "Placeholder Images"
+    }
+
+    switch (apiStatus.model) {
+      case "gemini-1.5-flash":
+        return "Gemini 1.5 Flash"
+      case "gemini-1.5-pro":
+        return "Gemini 1.5 Pro"
+      case "gemini-pro":
+        return "Gemini Pro"
+      default:
+        return apiStatus.model
+    }
+  }
+
   return (
     <div className="flex flex-1">
       <main className="flex flex-1 bg-background p-4">
@@ -198,7 +295,59 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
             >
               Chat
             </TabsTrigger>
+            {showApiKeySetup && (
+              <TabsTrigger
+                value="api-setup"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                API Setup
+              </TabsTrigger>
+            )}
           </TabsList>
+
+          {!apiStatus.isConfigured && !showApiKeySetup && (
+            <div className="mb-4 flex items-center justify-between gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-yellow-500">
+              <div className="flex items-start gap-2">
+                <Info size={16} className="flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p>Gemini API key not configured. Using placeholder images instead.</p>
+                  <p className="text-xs mt-1">Configure your API key to enable AI-powered image generation.</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10"
+                  onClick={() => setShowApiKeySetup(true)}
+                >
+                  Configure API Key
+                </Button>
+                <Link href="/settings">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 border-yellow-500 text-yellow-500 hover:bg-yellow-500/10"
+                  >
+                    <Settings size={14} />
+                    Settings
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {!apiStatus.isConfigured && !showApiKeySetup && (
+            <div className="mb-4">
+              <ApiKeyStatus onSetupClick={() => setShowApiKeySetup(true)} />
+            </div>
+          )}
+
+          {showApiKeySetup && (
+            <TabsContent value="api-setup" className="flex-1">
+              <ApiKeyManagement onStatusChange={handleApiStatusChange} />
+            </TabsContent>
+          )}
 
           <TabsContent value="generator" className="flex flex-1 flex-col md:flex-row">
             {/* Left Panel - Controls */}
@@ -207,10 +356,31 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                 <h2 className="mb-2 text-sm font-medium text-foreground">Model</h2>
                 <div className="rounded-md border border-border p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium gradient-text">Gemini Pro Vision</span>
-                    <span className="rounded bg-primary/20 px-2 py-0.5 text-xs text-primary">Recommended</span>
+                    <span className="font-medium gradient-text">{getModelDisplayName()}</span>
+                    <span
+                      className={`rounded px-2 py-0.5 text-xs ${
+                        apiStatus.isConfigured ? "bg-green-500/20 text-green-500" : "bg-yellow-500/20 text-yellow-500"
+                      }`}
+                    >
+                      {apiStatus.isConfigured ? "Active" : "Fallback Mode"}
+                    </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">Google's advanced AI model for image generation</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {apiStatus.isConfigured
+                      ? "Google's AI model for image description generation"
+                      : "Using placeholder images until API key is configured"}
+                  </p>
+
+                  {!apiStatus.isConfigured && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="mt-2 h-auto p-0 text-primary"
+                      onClick={() => setShowApiKeySetup(true)}
+                    >
+                      Configure API Key
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -339,6 +509,12 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                           <Download size={16} />
                         </Button>
                       </div>
+                      {image.description && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <p className="line-clamp-2">{image.description}</p>
+                          {image.model && <p className="mt-1 text-xs opacity-70">Generated with: {image.model}</p>}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -393,6 +569,7 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                         <p className="mt-1 text-xs text-muted-foreground">
                           {image.style} • {image.aspectRatio}
                         </p>
+                        {image.model && <p className="mt-1 text-xs opacity-70">Generated with: {image.model}</p>}
                       </div>
                     </div>
                   ))}

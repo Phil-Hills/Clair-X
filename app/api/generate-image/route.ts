@@ -1,9 +1,53 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import type { GeneratedImage } from "@/lib/types"
 
-// Initialize the Google Generative AI client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+// Set Node.js runtime to ensure compatibility with the Google Generative AI SDK
+export const runtime = "nodejs"
+
+// Basic validation for API key format
+function isValidApiKeyFormat(apiKey: string | null | undefined): boolean {
+  if (!apiKey) return false
+  // Basic format validation - Google API keys typically start with "AIza"
+  return typeof apiKey === "string" && apiKey.trim().startsWith("AIza")
+}
+
+// Available models to try in order of preference
+const AVAILABLE_MODELS = ["gemini-pro-vision", "gemini-pro", "gemini-1.5-pro", "gemini-1.0-pro"]
+
+// Function to find a working model
+async function findWorkingModel(genAI: GoogleGenerativeAI): Promise<string | null> {
+  // First try to list available models
+  try {
+    const modelList = await genAI.listModels()
+    console.log("Available models:", modelList)
+
+    // Find the first model from our preference list that's available
+    for (const modelName of AVAILABLE_MODELS) {
+      if (modelList.models.some((m) => m.name.includes(modelName))) {
+        return modelName
+      }
+    }
+  } catch (error) {
+    console.error("Error listing models:", error)
+  }
+
+  // If listing models fails, try each model directly
+  for (const modelName of AVAILABLE_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName })
+      // Test if the model works with a simple prompt
+      await model.generateContent("test")
+      console.log(`Model ${modelName} is working`)
+      return modelName
+    } catch (error) {
+      console.error(`Error testing model ${modelName}:`, error)
+    }
+  }
+
+  return null
+}
 
 export async function POST(request: Request) {
   // Check authentication
@@ -17,91 +61,182 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json()
-    const { prompt, style, aspectRatio, numberOfOutputs } = data
+    const { prompt, style, aspectRatio, numberOfOutputs, clientApiKey } = data
 
     // Validate inputs
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Content safety check
-    const isSafe = await performContentSafetyCheck(prompt)
-    if (!isSafe) {
-      return NextResponse.json(
-        {
-          error: "Your prompt contains content that violates our guidelines. Please revise and try again.",
-        },
-        { status: 400 },
-      )
-    }
+    // Get API key (try client key first, then environment variable)
+    const apiKey = clientApiKey || process.env.GEMINI_API_KEY || process.env.gemeni
 
-    // Enhance the prompt with style information if not set to "auto"
-    let enhancedPrompt = prompt
-    if (style !== "auto") {
-      enhancedPrompt = `${prompt} in ${style} style`
-    }
-
-    // Determine dimensions based on aspect ratio
-    let width = 512
-    let height = 512
-
-    switch (aspectRatio) {
-      case "3:2":
-        width = 600
-        height = 400
-        break
-      case "4:3":
-        width = 640
-        height = 480
-        break
-      case "16:9":
-        width = 640
-        height = 360
-        break
-      case "9:16":
-        width = 360
-        height = 640
-        break
-    }
-
-    // Generate images
-    const images = []
-    for (let i = 0; i < numberOfOutputs; i++) {
-      // Create a unique seed for each image
-      const seed = Math.floor(Math.random() * 1000000)
-
-      // In a real implementation, this would call the Gemini API
-      // For now, we'll use placeholder images
-      const imageUrl = `/placeholder.svg?height=${height}&width=${width}&query=${encodeURIComponent(
-        enhancedPrompt + " " + seed,
-      )}`
-
-      images.push({
-        url: imageUrl,
-        prompt,
-        style,
-        aspectRatio,
+    // Check if API key has valid format before attempting to use it
+    if (!isValidApiKeyFormat(apiKey)) {
+      console.log("Invalid API key format or no API key available, using placeholder images")
+      return NextResponse.json({
+        success: true,
+        images: generatePlaceholderImages(prompt, style, aspectRatio, numberOfOutputs),
+        mode: "fallback",
+        reason: "Invalid API key format or no API key available",
       })
     }
 
-    return NextResponse.json({
-      success: true,
-      images,
-    })
+    try {
+      // Initialize the Google Generative AI client
+      const genAI = new GoogleGenerativeAI(apiKey as string)
+
+      // Find a working model
+      const workingModelName = await findWorkingModel(genAI)
+
+      if (!workingModelName) {
+        console.error("No working models found")
+        return NextResponse.json({
+          success: true,
+          images: generatePlaceholderImages(prompt, style, aspectRatio, numberOfOutputs),
+          mode: "fallback",
+          reason: "No working Gemini models found",
+        })
+      }
+
+      console.log(`Using model: ${workingModelName}`)
+      const model = genAI.getGenerativeModel({ model: workingModelName })
+
+      // Enhance the prompt with style information if not set to "auto"
+      let enhancedPrompt = prompt
+      if (style !== "auto") {
+        enhancedPrompt = `${prompt} in ${style} style`
+      }
+
+      // Determine dimensions based on aspect ratio
+      let width = 1024
+      let height = 1024
+
+      switch (aspectRatio) {
+        case "3:2":
+          width = 1200
+          height = 800
+          break
+        case "4:3":
+          width = 1200
+          height = 900
+          break
+        case "16:9":
+          width = 1600
+          height = 900
+          break
+        case "9:16":
+          height = 1600
+          width = 900
+          break
+      }
+
+      // Generate images using Gemini
+      const results = await Promise.all(
+        Array(numberOfOutputs)
+          .fill(0)
+          .map(async (_, i) => {
+            // Create a unique seed for each image
+            const seed = Math.floor(Math.random() * 1000000)
+
+            // For Gemini, we need to use the text generation capabilities
+            // with a prompt that describes the image we want
+            const generationPrompt = `Create a detailed description for an image of: ${enhancedPrompt}. Seed: ${seed}.`
+
+            const result = await model.generateContent(generationPrompt)
+            const response = await result.response
+            const description = response.text()
+
+            // Use the description to create a placeholder image
+            const imageUrl = `/placeholder.svg?height=${height}&width=${width}&query=${encodeURIComponent(
+              description || enhancedPrompt,
+            )}`
+
+            return {
+              url: imageUrl,
+              prompt,
+              style,
+              aspectRatio,
+              description: description || enhancedPrompt,
+              model: workingModelName,
+            }
+          }),
+      )
+
+      return NextResponse.json({
+        success: true,
+        images: results,
+        mode: "gemini",
+        model: workingModelName,
+      })
+    } catch (apiError) {
+      console.error("Gemini API error:", apiError)
+
+      // Fall back to placeholder images
+      return NextResponse.json({
+        success: true,
+        images: generatePlaceholderImages(prompt, style, aspectRatio, numberOfOutputs),
+        mode: "fallback",
+        reason: "API error during generation",
+        error: String(apiError),
+      })
+    }
   } catch (error) {
     console.error("Error generating image:", error)
     return NextResponse.json({ error: "Failed to generate image" }, { status: 500 })
   }
 }
 
-// Content safety check function
-async function performContentSafetyCheck(prompt: string): Promise<boolean> {
-  // This would be replaced with a real content moderation API
-  // For demonstration purposes, we'll implement a simple check
-  const prohibitedTerms = [
-    // List of terms that would violate content policies
-  ]
+// Helper function to generate placeholder images
+function generatePlaceholderImages(
+  prompt: string,
+  style: string,
+  aspectRatio: string,
+  numberOfOutputs: number,
+): GeneratedImage[] {
+  const images: GeneratedImage[] = []
 
-  const lowerPrompt = prompt.toLowerCase()
-  return !prohibitedTerms.some((term) => lowerPrompt.includes(term))
+  // Determine dimensions based on aspect ratio
+  let width = 512
+  let height = 512
+
+  switch (aspectRatio) {
+    case "3:2":
+      width = 600
+      height = 400
+      break
+    case "4:3":
+      width = 640
+      height = 480
+      break
+    case "16:9":
+      width = 640
+      height = 360
+      break
+    case "9:16":
+      width = 360
+      height = 640
+      break
+  }
+
+  for (let i = 0; i < numberOfOutputs; i++) {
+    // Create a unique seed for each image
+    const seed = Math.floor(Math.random() * 1000000)
+
+    // Create a placeholder image URL with the prompt and style
+    const imageUrl = `/placeholder.svg?height=${height}&width=${width}&query=${encodeURIComponent(
+      prompt + " " + style + " style " + seed,
+    )}`
+
+    images.push({
+      url: imageUrl,
+      prompt,
+      style,
+      aspectRatio,
+      description: `Placeholder image for: ${prompt} in ${style} style`,
+      model: "fallback",
+    })
+  }
+
+  return images
 }

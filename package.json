@@ -60,8 +60,9 @@
     "zod": "^3.24.1",
     "@auth/core": "latest",
     "nodemailer": "latest",
+    "next-auth": "latest",
     "@google/generative-ai": "latest",
-    "next-auth": "latest"
+    "react-icons": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
