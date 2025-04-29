@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { LoadingButton } from "@/components/ui/loading-button"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -26,23 +26,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+      <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-md">
         <div className="mb-6 flex flex-col items-center">
-          <Image src="/logo.png" alt="Clair X Logo" width={64} height={64} className="mb-4 rounded-md object-cover" />
-          <h1 className="text-2xl font-bold">Clair X</h1>
-          <p className="mt-2 text-center text-gray-600">Advanced AI Image Generation</p>
+          <div className="mb-4 rounded-md border border-primary/50 p-2">
+            <Image src="/logo.png" alt="Clair X Logo" width={64} height={64} className="rounded-md object-cover" />
+          </div>
+          <h1 className="text-2xl font-bold gradient-text">Clair X</h1>
+          <p className="mt-2 text-center text-muted-foreground">Advanced AI Image & Video Generation</p>
         </div>
 
-        <Button
+        <LoadingButton
           onClick={handleGoogleLogin}
-          className="flex w-full items-center justify-center gap-2 bg-white text-gray-700 hover:bg-gray-100"
+          className="flex w-full items-center justify-center gap-2 bg-secondary text-foreground hover:bg-secondary/80"
           variant="outline"
-          disabled={isLoading}
+          isLoading={isLoading}
+          loadingText="Signing in..."
         >
-          {isLoading ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
-          ) : (
+          {!isLoading && (
             <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
               <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
                 <path
@@ -64,8 +65,8 @@ export default function LoginPage() {
               </g>
             </svg>
           )}
-          {isLoading ? "Signing in..." : "Sign in with Google"}
-        </Button>
+          Sign in with Google
+        </LoadingButton>
       </div>
     </div>
   )

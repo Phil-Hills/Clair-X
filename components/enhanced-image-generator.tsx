@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ImageIcon, Zap, Download, Trash2, AlertCircle } from "lucide-react"
@@ -9,9 +11,6 @@ import type { AspectRatio, GeneratedImage, ImageStyle } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
-import { Button } from "@/components/ui/button"
-import { LoadingButton } from "@/components/ui/loading-button"
-import { ChatBubble } from "@/components/ui/chat-bubble"
 
 interface ImageGeneratorProps {
   user: {
@@ -21,15 +20,7 @@ interface ImageGeneratorProps {
   } | null
 }
 
-interface ChatMessage {
-  id: string
-  content: string
-  sender: "user" | "ai"
-  timestamp: string
-  isNew: boolean
-}
-
-export default function ImageGenerator({ user }: ImageGeneratorProps) {
+export default function EnhancedImageGenerator({ user }: ImageGeneratorProps) {
   const { toast } = useToast()
   const [prompt, setPrompt] = useState("")
   const [style, setStyle] = useState<ImageStyle>("auto")
@@ -40,31 +31,12 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
   const [history, setHistory] = useState<GeneratedImage[]>([])
   const [activeTab, setActiveTab] = useState("generator")
   const [error, setError] = useState<string | null>(null)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      content: "Hello! I'm Clair. How can I help you create images today?",
-      sender: "ai",
-      timestamp: new Date().toLocaleTimeString(),
-      isNew: false,
-    },
-  ])
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return
 
     setIsGenerating(true)
     setError(null)
-
-    // Add user message to chat
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: prompt,
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString(),
-      isNew: false,
-    }
-    setChatMessages((prev) => [...prev, userMessage])
 
     try {
       const response = await fetch("/api/generate-image", {
@@ -88,16 +60,6 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
       setGeneratedImages(data.images)
       setHistory((prev) => [...data.images, ...prev])
 
-      // Add AI response to chat
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: `I've created ${data.images.length} image${data.images.length > 1 ? "s" : ""} based on your prompt.`,
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-        isNew: true,
-      }
-      setChatMessages((prev) => [...prev, aiMessage])
-
       toast({
         title: "Images generated successfully",
         description: `Created ${data.images.length} image${data.images.length > 1 ? "s" : ""} based on your prompt.`,
@@ -106,16 +68,6 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
       console.error("Error generating images:", error)
       setError("Failed to generate images. Please try again.")
 
-      // Add error message to chat
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: "I'm sorry, I couldn't generate those images. Please try again.",
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-        isNew: true,
-      }
-      setChatMessages((prev) => [...prev, errorMessage])
-
       toast({
         title: "Error generating images",
         description: "There was a problem generating your images. Please try again.",
@@ -123,11 +75,6 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
       })
     } finally {
       setIsGenerating(false)
-
-      // After 3 seconds, mark all messages as not new
-      setTimeout(() => {
-        setChatMessages((prev) => prev.map((msg) => ({ ...msg, isNew: false })))
-      }, 3000)
     }
   }
 
@@ -179,35 +126,19 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
     <div className="flex flex-1">
       <main className="flex flex-1 bg-background p-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
-          <TabsList className="mb-4 self-center bg-secondary">
-            <TabsTrigger
-              value="generator"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Generator
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              History
-            </TabsTrigger>
-            <TabsTrigger
-              value="chat"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Chat
-            </TabsTrigger>
+          <TabsList className="mb-4 self-center">
+            <TabsTrigger value="generator">Generator</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="generator" className="flex flex-1 flex-col md:flex-row">
+          <TabsContent value="generator" className="flex flex-1">
             {/* Left Panel - Controls */}
-            <div className="mb-4 w-full rounded-lg bg-card p-4 shadow-md md:mb-0 md:w-[380px] md:mr-4">
+            <div className="w-[380px] overflow-y-auto rounded-lg bg-card p-4 shadow-sm">
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Model</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Model</h2>
                 <div className="rounded-md border border-border p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium gradient-text">Gemini Pro Vision</span>
+                    <span className="font-medium">Gemini Pro Vision</span>
                     <span className="rounded bg-primary/20 px-2 py-0.5 text-xs text-primary">Recommended</span>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">Google's advanced AI model for image generation</p>
@@ -215,10 +146,10 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Prompt</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Prompt</h2>
                 <Textarea
                   placeholder="Enter your prompt..."
-                  className="min-h-[100px] resize-none bg-secondary border-secondary"
+                  className="min-h-[100px] resize-none"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                 />
@@ -228,12 +159,12 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Style</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Style</h2>
                 <Select value={style} onValueChange={(value) => setStyle(value as ImageStyle)}>
-                  <SelectTrigger className="bg-secondary border-secondary">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select style" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
+                  <SelectContent>
                     <SelectItem value="auto">Auto</SelectItem>
                     <SelectItem value="realistic">Realistic</SelectItem>
                     <SelectItem value="cartoon">Cartoon</SelectItem>
@@ -243,13 +174,12 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Number of Outputs</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Number of Outputs</h2>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4].map((num) => (
                     <Button
                       key={num}
                       variant={num === numOutputs ? "default" : "outline"}
-                      className={num === numOutputs ? "" : "border-border bg-secondary text-foreground"}
                       size="sm"
                       onClick={() => setNumOutputs(num)}
                     >
@@ -260,7 +190,7 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Aspect Ratio</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Aspect Ratio</h2>
                 <div className="flex gap-2">
                   {[
                     { label: "1:1", value: "1:1" },
@@ -271,12 +201,8 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                   ].map((ratio) => (
                     <Button
                       key={ratio.value}
-                      variant="outline"
-                      className={`h-12 w-12 p-0 ${
-                        aspectRatio === ratio.value
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-secondary text-foreground border-border"
-                      }`}
+                      variant={aspectRatio === ratio.value ? "default" : "outline"}
+                      className="h-12 w-12 p-0"
                       size="sm"
                       onClick={() => setAspectRatio(ratio.value as AspectRatio)}
                     >
@@ -287,7 +213,7 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               </div>
 
               {error && (
-                <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/20 p-3 text-destructive-foreground">
+                <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-destructive">
                   <AlertCircle size={16} />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -296,9 +222,9 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               <LoadingButton
                 className="mt-4 w-full gap-2"
                 onClick={handleGenerate}
-                disabled={!prompt.trim()}
                 isLoading={isGenerating}
-                loadingText="Generating images..."
+                loadingText="Generating..."
+                disabled={!prompt.trim()}
               >
                 <Zap size={16} />
                 Generate Image
@@ -306,20 +232,20 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
             </div>
 
             {/* Right Panel - Preview */}
-            <div className="flex flex-1 flex-col rounded-lg bg-card p-4 shadow-md">
+            <div className="ml-4 flex flex-1 rounded-lg bg-card p-4 shadow-sm">
               {isGenerating ? (
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid w-full grid-cols-2 gap-4">
                   {Array(numOutputs)
                     .fill(0)
                     .map((_, i) => (
                       <div key={i} className="flex flex-col gap-2">
-                        <Skeleton className="h-48 w-full rounded-md bg-secondary" />
-                        <Skeleton className="h-4 w-3/4 bg-secondary" />
+                        <Skeleton className="h-48 w-full rounded-md" />
+                        <Skeleton className="h-4 w-3/4" />
                       </div>
                     ))}
                 </div>
               ) : generatedImages.length > 0 ? (
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid w-full grid-cols-2 gap-4">
                   {generatedImages.map((image, index) => (
                     <div key={index} className="group relative overflow-hidden rounded-md">
                       <Image
@@ -333,7 +259,7 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-white hover:bg-white/20"
+                          className="h-8 w-8 text-white"
                           onClick={() => handleDownload(image.url, index)}
                         >
                           <Download size={16} />
@@ -347,7 +273,7 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-md border border-border bg-secondary">
                     <ImageIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="mb-2 text-lg font-medium text-foreground">No Generation History</h3>
+                  <h3 className="mb-2 text-lg font-medium">No Generation History</h3>
                   <p className="max-w-md text-sm text-muted-foreground">
                     Enter a prompt and click "Generate Image" to start creating! Your artwork will be displayed here.
                   </p>
@@ -357,12 +283,12 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
           </TabsContent>
 
           <TabsContent value="history" className="flex-1">
-            <div className="rounded-lg bg-card p-6 shadow-md">
+            <div className="rounded-lg bg-card p-6 shadow-sm">
               <h2 className="mb-6 text-xl font-semibold gradient-text">Generation History</h2>
               {history.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {history.map((image, index) => (
-                    <div key={index} className="group relative overflow-hidden rounded-md bg-secondary/20 p-3">
+                    <div key={index} className="group relative overflow-hidden rounded-md">
                       <Image
                         src={image.url || "/placeholder.svg"}
                         alt={`History image ${index + 1}`}
@@ -374,7 +300,7 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-white hover:bg-white/20"
+                          className="h-8 w-8 text-white"
                           onClick={() => handleDownload(image.url, index)}
                         >
                           <Download size={16} />
@@ -382,13 +308,13 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-white hover:bg-white/20"
+                          className="h-8 w-8 text-white"
                           onClick={() => handleDeleteImage(index)}
                         >
                           <Trash2 size={16} />
                         </Button>
                       </div>
-                      <div className="mt-2 text-sm text-foreground">
+                      <div className="mt-2 text-sm">
                         <p className="line-clamp-1">{image.prompt}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {image.style} • {image.aspectRatio}
@@ -400,51 +326,10 @@ export default function ImageGenerator({ user }: ImageGeneratorProps) {
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <ImageIcon className="mb-4 h-12 w-12 text-muted-foreground" />
-                  <h3 className="mb-2 text-lg font-medium text-foreground">No Images Yet</h3>
+                  <h3 className="mb-2 text-lg font-medium">No Images Yet</h3>
                   <p className="text-muted-foreground">Generate some images to see your history here.</p>
                 </div>
               )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="chat" className="flex-1">
-            <div className="rounded-lg bg-card p-6 shadow-md h-full flex flex-col">
-              <h2 className="mb-6 text-xl font-semibold gradient-text">Chat with Clair</h2>
-
-              <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                {chatMessages.map((message) => (
-                  <ChatBubble
-                    key={message.id}
-                    message={message.content}
-                    sender={message.sender}
-                    timestamp={message.timestamp}
-                    isNew={message.isNew}
-                  />
-                ))}
-              </div>
-
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Ask Clair about image generation..."
-                  className="resize-none bg-secondary border-secondary"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleGenerate()
-                    }
-                  }}
-                />
-                <LoadingButton
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={handleGenerate}
-                  disabled={!prompt.trim()}
-                  isLoading={isGenerating}
-                >
-                  <Zap size={16} />
-                </LoadingButton>
-              </div>
             </div>
           </TabsContent>
         </Tabs>

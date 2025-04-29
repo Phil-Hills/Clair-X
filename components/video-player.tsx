@@ -99,7 +99,7 @@ export default function VideoPlayer({ src, poster, id, onError }: VideoPlayerPro
           className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/30"
           onClick={togglePlay}
         >
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
             <Play className="h-8 w-8 text-white" />
           </div>
         </div>

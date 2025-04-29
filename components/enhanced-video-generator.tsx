@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Video, Zap, Download, Trash2, AlertCircle } from "lucide-react"
@@ -9,9 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { Slider } from "@/components/ui/slider"
 import VideoPlayer from "./video-player"
-import { Button } from "@/components/ui/button"
-import { LoadingButton } from "@/components/ui/loading-button"
-import { ChatBubble } from "@/components/ui/chat-bubble"
 
 interface VideoStyle {
   id: string
@@ -35,15 +34,7 @@ interface GeneratedVideo {
   thumbnail: string
 }
 
-interface ChatMessage {
-  id: string
-  content: string
-  sender: "user" | "ai"
-  timestamp: string
-  isNew: boolean
-}
-
-export default function VideoGenerator() {
+export default function EnhancedVideoGenerator() {
   const { toast } = useToast()
   const [prompt, setPrompt] = useState("")
   const [style, setStyle] = useState<string>("realistic")
@@ -54,15 +45,6 @@ export default function VideoGenerator() {
   const [history, setHistory] = useState<GeneratedVideo[]>([])
   const [activeTab, setActiveTab] = useState("generator")
   const [error, setError] = useState<string | null>(null)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      content: "Hello! I'm Clair. How can I help you create videos today?",
-      sender: "ai",
-      timestamp: new Date().toLocaleTimeString(),
-      isNew: false,
-    },
-  ])
 
   // Video style options
   const videoStyles: VideoStyle[] = [
@@ -84,16 +66,6 @@ export default function VideoGenerator() {
 
     setIsGenerating(true)
     setError(null)
-
-    // Add user message to chat
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: prompt,
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString(),
-      isNew: false,
-    }
-    setChatMessages((prev) => [...prev, userMessage])
 
     try {
       const response = await fetch("/api/generate-video", {
@@ -117,16 +89,6 @@ export default function VideoGenerator() {
       setGeneratedVideos(data.videos)
       setHistory((prev) => [...data.videos, ...prev])
 
-      // Add AI response to chat
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: `I've created a ${duration}-second ${videoStyles.find((s) => s.id === style)?.name.toLowerCase()} video based on your prompt.`,
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-        isNew: true,
-      }
-      setChatMessages((prev) => [...prev, aiMessage])
-
       toast({
         title: "Video generated successfully",
         description: `Created a ${duration}-second video based on your prompt.`,
@@ -135,16 +97,6 @@ export default function VideoGenerator() {
       console.error("Error generating video:", error)
       setError("Failed to generate video. Please try again.")
 
-      // Add error message to chat
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: "I'm sorry, I couldn't generate that video. Please try again.",
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-        isNew: true,
-      }
-      setChatMessages((prev) => [...prev, errorMessage])
-
       toast({
         title: "Error generating video",
         description: "There was a problem generating your video. Please try again.",
@@ -152,11 +104,6 @@ export default function VideoGenerator() {
       })
     } finally {
       setIsGenerating(false)
-
-      // After 3 seconds, mark all messages as not new
-      setTimeout(() => {
-        setChatMessages((prev) => prev.map((msg) => ({ ...msg, isNew: false })))
-      }, 3000)
     }
   }
 
@@ -200,35 +147,19 @@ export default function VideoGenerator() {
     <div className="flex flex-1">
       <main className="flex flex-1 bg-background p-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
-          <TabsList className="mb-4 self-center bg-secondary">
-            <TabsTrigger
-              value="generator"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Generator
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              History
-            </TabsTrigger>
-            <TabsTrigger
-              value="chat"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Chat
-            </TabsTrigger>
+          <TabsList className="mb-4 self-center">
+            <TabsTrigger value="generator">Generator</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="generator" className="flex flex-1 flex-col md:flex-row">
+          <TabsContent value="generator" className="flex flex-1">
             {/* Left Panel - Controls */}
-            <div className="mb-4 w-full rounded-lg bg-card p-4 shadow-md md:mb-0 md:w-[380px] md:mr-4">
+            <div className="w-[380px] overflow-y-auto rounded-lg bg-card p-4 shadow-sm">
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Model</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Model</h2>
                 <div className="rounded-md border border-border p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium gradient-text">Human Like Video</span>
+                    <span className="font-medium">Human Like Video</span>
                     <span className="rounded bg-primary/20 px-2 py-0.5 text-xs text-primary">Premium</span>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">Generate realistic human-like videos</p>
@@ -236,10 +167,10 @@ export default function VideoGenerator() {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Prompt</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Prompt</h2>
                 <Textarea
                   placeholder="Describe the video you want to create..."
-                  className="min-h-[100px] resize-none bg-secondary border-secondary"
+                  className="min-h-[100px] resize-none"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                 />
@@ -249,12 +180,12 @@ export default function VideoGenerator() {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Style</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Style</h2>
                 <Select value={style} onValueChange={(value) => setStyle(value)}>
-                  <SelectTrigger className="bg-secondary border-secondary">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select style" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
+                  <SelectContent>
                     {videoStyles.map((style) => (
                       <SelectItem key={style.id} value={style.id}>
                         <div className="flex flex-col">
@@ -268,7 +199,7 @@ export default function VideoGenerator() {
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Duration (seconds)</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Duration (seconds)</h2>
                 <div className="space-y-2">
                   <Slider
                     value={[duration]}
@@ -283,17 +214,17 @@ export default function VideoGenerator() {
                     <span>15s</span>
                     <span>30s</span>
                   </div>
-                  <div className="text-center text-sm font-medium text-foreground">{duration} seconds</div>
+                  <div className="text-center text-sm font-medium">{duration} seconds</div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <h2 className="mb-2 text-sm font-medium text-foreground">Resolution</h2>
+                <h2 className="mb-2 text-sm font-medium gradient-text">Resolution</h2>
                 <Select value={resolution} onValueChange={(value) => setResolution(value)}>
-                  <SelectTrigger className="bg-secondary border-secondary">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select resolution" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
+                  <SelectContent>
                     {videoResolutions.map((res) => (
                       <SelectItem key={res.id} value={res.id}>
                         {res.label} ({res.width}x{res.height})
@@ -304,18 +235,18 @@ export default function VideoGenerator() {
               </div>
 
               {error && (
-                <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/20 p-3 text-destructive-foreground">
+                <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-destructive">
                   <AlertCircle size={16} />
                   <span className="text-sm">{error}</span>
                 </div>
               )}
 
               <LoadingButton
-                className="mt-4 w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                className="mt-4 w-full gap-2"
                 onClick={handleGenerate}
-                disabled={!prompt.trim()}
                 isLoading={isGenerating}
-                loadingText="Generating video..."
+                loadingText="Generating..."
+                disabled={!prompt.trim()}
               >
                 <Zap size={16} />
                 Generate Video
@@ -323,13 +254,13 @@ export default function VideoGenerator() {
             </div>
 
             {/* Right Panel - Preview */}
-            <div className="flex flex-1 flex-col rounded-lg bg-card p-4 shadow-md">
+            <div className="ml-4 flex flex-1 rounded-lg bg-card p-4 shadow-sm">
               {isGenerating ? (
                 <div className="flex w-full flex-col items-center justify-center gap-4">
-                  <Skeleton className="h-[360px] w-full max-w-[640px] rounded-md bg-secondary" />
+                  <Skeleton className="h-[360px] w-full max-w-[640px] rounded-md" />
                   <div className="flex w-full max-w-[640px] flex-col gap-2">
-                    <Skeleton className="h-4 w-3/4 bg-secondary" />
-                    <Skeleton className="h-4 w-1/2 bg-secondary" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
                   </div>
                 </div>
               ) : generatedVideos.length > 0 ? (
@@ -348,7 +279,7 @@ export default function VideoGenerator() {
                         />
                         <div className="mt-2 flex items-center justify-between">
                           <div>
-                            <h3 className="font-medium text-foreground">Generated Video {index + 1}</h3>
+                            <h3 className="font-medium">Generated Video {index + 1}</h3>
                             <p className="text-sm text-muted-foreground">
                               {video.duration}s • {videoStyles.find((s) => s.id === video.style)?.name}
                             </p>
@@ -356,7 +287,7 @@ export default function VideoGenerator() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-foreground hover:text-primary hover:bg-secondary"
+                            className="h-8 w-8"
                             onClick={() => handleDownload(video.url, index)}
                           >
                             <Download size={16} />
@@ -371,7 +302,7 @@ export default function VideoGenerator() {
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-md border border-border bg-secondary">
                     <Video className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="mb-2 text-lg font-medium text-foreground">No Videos Generated</h3>
+                  <h3 className="mb-2 text-lg font-medium">No Videos Generated</h3>
                   <p className="max-w-md text-sm text-muted-foreground">
                     Enter a prompt and click "Generate Video" to start creating! Your videos will be displayed here.
                   </p>
@@ -381,12 +312,12 @@ export default function VideoGenerator() {
           </TabsContent>
 
           <TabsContent value="history" className="flex-1">
-            <div className="rounded-lg bg-card p-6 shadow-md">
+            <div className="rounded-lg bg-card p-6 shadow-sm">
               <h2 className="mb-6 text-xl font-semibold gradient-text">Video History</h2>
               {history.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {history.map((video, index) => (
-                    <div key={video.id} className="overflow-hidden rounded-md bg-secondary/20 p-3">
+                    <div key={video.id} className="overflow-hidden rounded-md">
                       <VideoPlayer
                         src={video.url}
                         poster={video.thumbnail}
@@ -398,7 +329,7 @@ export default function VideoGenerator() {
                       />
                       <div className="mt-2 flex items-center justify-between">
                         <div>
-                          <p className="line-clamp-1 font-medium text-foreground">{video.prompt}</p>
+                          <p className="line-clamp-1 font-medium">{video.prompt}</p>
                           <p className="text-xs text-muted-foreground">
                             {video.duration}s • {videoStyles.find((s) => s.id === video.style)?.name}
                           </p>
@@ -407,7 +338,7 @@ export default function VideoGenerator() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-foreground hover:text-primary hover:bg-secondary"
+                            className="h-8 w-8"
                             onClick={() => handleDownload(video.url, index)}
                           >
                             <Download size={16} />
@@ -415,7 +346,7 @@ export default function VideoGenerator() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-foreground hover:text-primary hover:bg-secondary"
+                            className="h-8 w-8"
                             onClick={() => handleDeleteVideo(video.id)}
                           >
                             <Trash2 size={16} />
@@ -428,51 +359,10 @@ export default function VideoGenerator() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Video className="mb-4 h-12 w-12 text-muted-foreground" />
-                  <h3 className="mb-2 text-lg font-medium text-foreground">No Videos Yet</h3>
+                  <h3 className="mb-2 text-lg font-medium">No Videos Yet</h3>
                   <p className="text-muted-foreground">Generate some videos to see your history here.</p>
                 </div>
               )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="chat" className="flex-1">
-            <div className="rounded-lg bg-card p-6 shadow-md h-full flex flex-col">
-              <h2 className="mb-6 text-xl font-semibold gradient-text">Chat with Clair</h2>
-
-              <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                {chatMessages.map((message) => (
-                  <ChatBubble
-                    key={message.id}
-                    message={message.content}
-                    sender={message.sender}
-                    timestamp={message.timestamp}
-                    isNew={message.isNew}
-                  />
-                ))}
-              </div>
-
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Ask Clair about video generation..."
-                  className="resize-none bg-secondary border-secondary"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleGenerate()
-                    }
-                  }}
-                />
-                <LoadingButton
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={handleGenerate}
-                  disabled={!prompt.trim()}
-                  isLoading={isGenerating}
-                >
-                  <Zap size={16} />
-                </LoadingButton>
-              </div>
             </div>
           </TabsContent>
         </Tabs>
