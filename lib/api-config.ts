@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
-// Define available Gemini models in order of preference
+// Updated list of available models in order of preference
 export const GEMINI_MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
 
 // Function to validate API key format

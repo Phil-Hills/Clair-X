@@ -3,8 +3,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 
 export const runtime = "nodejs"
 
-// Available models to try in order of preference
-const AVAILABLE_MODELS = ["gemini-pro-vision", "gemini-pro", "gemini-1.5-pro", "gemini-1.0-pro"]
+// Updated list of available models to try in order of preference
+// Removed deprecated gemini-pro-vision and prioritized gemini-1.5-flash
+const AVAILABLE_MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
 
 // Function to validate API key format
 function isValidApiKeyFormat(apiKey: string | null | undefined): boolean {
@@ -15,24 +16,10 @@ function isValidApiKeyFormat(apiKey: string | null | undefined): boolean {
 
 // Function to find a working model
 async function findWorkingModel(genAI: GoogleGenerativeAI): Promise<string | null> {
-  // First try to list available models
-  try {
-    const modelList = await genAI.listModels()
-    console.log("Available models:", modelList)
-
-    // Find the first model from our preference list that's available
-    for (const modelName of AVAILABLE_MODELS) {
-      if (modelList.models.some((m) => m.name.includes(modelName))) {
-        return modelName
-      }
-    }
-  } catch (error) {
-    console.error("Error listing models:", error)
-  }
-
-  // If listing models fails, try each model directly
+  // Try each model directly
   for (const modelName of AVAILABLE_MODELS) {
     try {
+      console.log(`Testing model: ${modelName}`)
       const model = genAI.getGenerativeModel({ model: modelName })
       // Test if the model works with a simple prompt
       await model.generateContent("test")
