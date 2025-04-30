@@ -5,9 +5,10 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ImageIcon, Video, Zap, Settings, Info, CheckCircle, Sparkles } from "lucide-react"
+import { ImageIcon, Video, Zap, Settings, Info, CheckCircle, Sparkles, RefreshCw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import ApiKeyStatus from "./api-key-status"
+import Link from "next/link"
 
 interface HomeDashboardProps {
   onNavigate: (section: string) => void
@@ -180,6 +181,38 @@ export default function HomeDashboard({ onNavigate, apiStatus }: HomeDashboardPr
                   <Settings className="h-4 w-4" />
                   Configure API
                 </Button>
+              </CardFooter>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <RefreshCw className="h-5 w-5 text-primary" />
+                  <span>Model Testing</span>
+                </CardTitle>
+                <CardDescription>Test and verify Gemini model compatibility</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border border-border p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Verify Models:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-primary"></span>
+                      <span className="text-xs text-primary">gemini-1.5-flash</span>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Test if your API key works with the latest Gemini models
+                  </p>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/test-models" className="w-full">
+                  <Button className="w-full gap-2" variant="outline">
+                    <RefreshCw className="h-4 w-4" />
+                    Test Models
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           </div>
