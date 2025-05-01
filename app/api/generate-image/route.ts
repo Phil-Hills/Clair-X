@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 
 export const runtime = "edge"
 
+// Use a standard stable diffusion model from Hugging Face
+const MODEL_ID = "stabilityai/stable-diffusion-xl-base-1.0"
+
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json()
@@ -11,22 +14,21 @@ export async function POST(req: Request) {
     }
 
     console.log("Generating image with prompt:", prompt)
-    console.log("Using Hugging Face URL:", process.env.HUGGINGFACE_SPACE_URL)
 
-    // Use the direct Hugging Face Space URL
-    const response = await fetch(`${process.env.HUGGINGFACE_SPACE_URL}/generate`, {
+    // Use the standard Hugging Face Inference API
+    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL_ID}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
       },
       body: JSON.stringify({
-        prompt: prompt,
-        negative_prompt: "", // No censorship/filtering
-        num_inference_steps: 30,
-        guidance_scale: 7.5,
-        width: 768,
-        height: 768,
+        inputs: prompt,
+        parameters: {
+          negative_prompt: "blurry, bad quality, distorted, disfigured",
+          num_inference_steps: 30,
+          guidance_scale: 7.5,
+        },
       }),
     })
 
@@ -39,9 +41,10 @@ export async function POST(req: Request) {
       )
     }
 
-    // The response should be the image data
-    const imageData = await response.arrayBuffer()
-    const base64Image = Buffer.from(imageData).toString("base64")
+    // The response is the image blob directly
+    const imageBlob = await response.blob()
+    const imageArrayBuffer = await imageBlob.arrayBuffer()
+    const base64Image = Buffer.from(imageArrayBuffer).toString("base64")
     const dataUrl = `data:image/jpeg;base64,${base64Image}`
 
     // Log success

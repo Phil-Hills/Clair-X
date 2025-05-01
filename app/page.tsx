@@ -48,7 +48,7 @@ export default function Home() {
             />
             <h2 className="text-5xl font-bold text-pink-500 mb-6">Clair-X</h2>
             <p className="text-xl text-gray-300 max-w-2xl mb-8">
-              Uncensored AI image generation for Salesforce users, with built-in audit trails and automation
+              AI image generation for Salesforce users, with built-in audit trails and automation
             </p>
             <a href="#generator">
               <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
@@ -82,9 +82,9 @@ export default function Home() {
                     <polyline points="21 15 16 10 5 21"></polyline>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Uncensored Generation</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Advanced Image Generation</h3>
                 <p className="text-gray-300">
-                  Create images without creative limitations using the powerful FLUX.1-dev model.
+                  Create high-quality images using the powerful Stable Diffusion XL model.
                 </p>
               </div>
               <div className="bg-gray-700 p-6 rounded-lg">
@@ -143,8 +143,8 @@ export default function Home() {
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-6 text-pink-400">AI Image Generator</h2>
             <p className="text-center text-gray-300 max-w-2xl mx-auto mb-8">
-              Create uncensored AI images on demand, with every output instantly stored, audited, and ready for
-              automation in Salesforce.
+              Create AI images on demand, with every output instantly stored, audited, and ready for automation in
+              Salesforce.
             </p>
             <ImageGenerator />
           </div>
@@ -167,7 +167,7 @@ export default function Home() {
                 <h3 className="text-xl font-semibold mb-4 text-white">Technical Build</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-300">
                   <li>Agent built with Salesforce Agent Builder</li>
-                  <li>Secure HTTPS call from Salesforce Apex → Python FastAPI relay → FLUX.1-dev</li>
+                  <li>Secure HTTPS call from Salesforce Apex → Python FastAPI relay → Hugging Face API</li>
                   <li>Signed URLs ensure images upload directly to Salesforce Files</li>
                   <li>Optional Vercel v0 front-end mirrors the agent for public demos</li>
                 </ul>

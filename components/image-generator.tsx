@@ -50,7 +50,7 @@ export function ImageGenerator() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || "Failed to generate image")
+        throw new Error(data.error || `Failed to generate image: ${response.status} ${response.statusText}`)
       }
 
       const data = await response.json()
@@ -59,10 +59,32 @@ export function ImageGenerator() {
       // Add to audit logs
       if (data.auditLog) {
         setAuditLogs((prev) => [data.auditLog, ...prev])
+      } else {
+        // Create a default audit log if none was returned
+        setAuditLogs((prev) => [
+          {
+            timestamp: new Date().toISOString(),
+            prompt: prompt,
+            userId: "demo-user",
+            success: true,
+          },
+          ...prev,
+        ])
       }
     } catch (err) {
       console.error("Error generating image:", err)
       setError(err instanceof Error ? err.message : "An unknown error occurred")
+
+      // Add failed attempt to audit logs
+      setAuditLogs((prev) => [
+        {
+          timestamp: new Date().toISOString(),
+          prompt: prompt,
+          userId: "demo-user",
+          success: false,
+        },
+        ...prev,
+      ])
     } finally {
       setLoading(false)
     }
@@ -165,7 +187,7 @@ export function ImageGenerator() {
                     <polyline points="21 15 16 10 5 21"></polyline>
                   </svg>
                   <p className="text-gray-400">Enter a prompt above to generate an image</p>
-                  <p className="text-gray-500 text-sm mt-2">Uncensored FLUX.1-dev model</p>
+                  <p className="text-gray-500 text-sm mt-2">Powered by Stable Diffusion XL</p>
                 </div>
               </div>
             )}
