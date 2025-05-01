@@ -20,13 +20,8 @@ export default function Home() {
                 </Link>
               </li>
               <li>
-                <Link href="#image-gen" className="text-gray-300 hover:text-pink-400 transition-colors">
-                  Image Gen
-                </Link>
-              </li>
-              <li>
-                <Link href="#chat" className="text-gray-300 hover:text-pink-400 transition-colors">
-                  AI Chat
+                <Link href="#generator" className="text-gray-300 hover:text-pink-400 transition-colors">
+                  Generator
                 </Link>
               </li>
               <li>
@@ -51,22 +46,15 @@ export default function Home() {
               priority
               className="rounded-md mb-8"
             />
-            <h2 className="text-5xl font-bold text-pink-500 mb-6">Welcome to Clair-X</h2>
+            <h2 className="text-5xl font-bold text-pink-500 mb-6">Clair-X</h2>
             <p className="text-xl text-gray-300 max-w-2xl mb-8">
-              The next generation AI platform powered by Hugging Face technology
+              Uncensored AI image generation for Salesforce users, with built-in audit trails and automation
             </p>
-            <div className="flex gap-4">
-              <a href="#image-gen">
-                <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
-                  Generate Images
-                </Button>
-              </a>
-              <a href="#chat">
-                <Button className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-6 text-lg rounded-md">
-                  Try AI Chat
-                </Button>
-              </a>
-            </div>
+            <a href="#generator">
+              <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
+                Try the Generator
+              </Button>
+            </a>
           </div>
         </section>
 
@@ -89,12 +77,14 @@ export default function Home() {
                     strokeLinejoin="round"
                     className="text-white"
                   >
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Advanced AI Chat</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Uncensored Generation</h3>
                 <p className="text-gray-300">
-                  Engage with our state-of-the-art AI models powered by Hugging Face technology.
+                  Create images without creative limitations using the powerful FLUX.1-dev model.
                 </p>
               </div>
               <div className="bg-gray-700 p-6 rounded-lg">
@@ -111,14 +101,15 @@ export default function Home() {
                     strokeLinejoin="round"
                     className="text-white"
                   >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
+                    <path d="M20 7h-3a2 2 0 0 1-2-2V2"></path>
+                    <path d="M16 2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                    <path d="M12 13V7"></path>
+                    <path d="M9 10h6"></path>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Image Generation</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Salesforce Integration</h3>
                 <p className="text-gray-300">
-                  Create stunning images from text descriptions with our advanced AI image generator.
+                  Attach generated images directly to leads, opportunities, and campaigns in Salesforce.
                 </p>
               </div>
               <div className="bg-gray-700 p-6 rounded-lg">
@@ -138,49 +129,24 @@ export default function Home() {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Enhanced Security</h3>
-                <p className="text-gray-300">Enterprise-grade security with data encryption and privacy controls.</p>
+                <h3 className="text-xl font-semibold mb-2 text-white">Complete Audit Trail</h3>
+                <p className="text-gray-300">
+                  Every generation is logged for compliance and can trigger Salesforce automation.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Image Generation Section */}
-        <section id="image-gen" className="py-16 px-4">
+        {/* Generator Section */}
+        <section id="generator" className="py-16 px-4">
           <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12 text-pink-400">AI Image Generator</h2>
+            <h2 className="text-3xl font-bold text-center mb-6 text-pink-400">AI Image Generator</h2>
             <p className="text-center text-gray-300 max-w-2xl mx-auto mb-8">
-              Transform your ideas into stunning visuals with our AI-powered image generator. Simply describe what you
-              want to see, and watch as Clair-X brings your imagination to life.
+              Create uncensored AI images on demand, with every output instantly stored, audited, and ready for
+              automation in Salesforce.
             </p>
             <ImageGenerator />
-          </div>
-        </section>
-
-        {/* Chat Section */}
-        <section id="chat" className="py-16 px-4">
-          <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12 text-pink-400">Try Clair-X AI</h2>
-            <div className="max-w-3xl mx-auto bg-gray-800 rounded-lg p-6">
-              <div className="bg-gray-700 rounded-lg p-4 mb-4 h-64 overflow-y-auto">
-                <div className="flex items-start mb-4">
-                  <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="text-white text-xs font-bold">CX</span>
-                  </div>
-                  <div className="bg-gray-600 rounded-lg p-3 max-w-[80%]">
-                    <p className="text-white">Hello! I'm Clair-X, your AI assistant. How can I help you today?</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  className="flex-1 bg-gray-700 border-gray-600 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-                <Button className="bg-pink-600 hover:bg-pink-700 text-white">Send</Button>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -188,16 +154,33 @@ export default function Home() {
         <section id="about" className="py-16 bg-gray-800 px-4">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12 text-pink-400">About Clair-X</h2>
-            <div className="max-w-3xl mx-auto text-center">
-              <p className="text-gray-300 mb-6">
-                Clair-X is a cutting-edge AI platform designed to push the boundaries of what's possible with artificial
-                intelligence. Built on Hugging Face's powerful models, Clair-X delivers exceptional performance and
-                versatility.
-              </p>
-              <p className="text-gray-300">
-                Our mission is to make advanced AI technology accessible and useful for everyone, from developers and
-                researchers to businesses and individuals.
-              </p>
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-gray-700 p-6 rounded-lg mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-white">Inspiration</h3>
+                <p className="text-gray-300">
+                  Most commercial AI services censor creative output. I wanted full artistic control without leaving the
+                  Salesforce environment I already use to run my business.
+                </p>
+              </div>
+
+              <div className="bg-gray-700 p-6 rounded-lg mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-white">Technical Build</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                  <li>Agent built with Salesforce Agent Builder</li>
+                  <li>Secure HTTPS call from Salesforce Apex → Python FastAPI relay → FLUX.1-dev</li>
+                  <li>Signed URLs ensure images upload directly to Salesforce Files</li>
+                  <li>Optional Vercel v0 front-end mirrors the agent for public demos</li>
+                </ul>
+              </div>
+
+              <div className="bg-gray-700 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold mb-4 text-white">Next Steps</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                  <li>Package for AppExchange so other solo builders can install in minutes</li>
+                  <li>Add text-and-audio generation via Hugging Face multi-modal endpoints</li>
+                  <li>Introduce voice prompts inside Agentforce</li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
@@ -210,7 +193,13 @@ export default function Home() {
               <Image src="/clair-x-logo.jpeg" alt="Clair-X Logo" width={30} height={30} className="rounded mr-2" />
               <span className="text-pink-500 font-bold">Clair-X</span>
             </div>
-            <div className="text-gray-400 text-sm">© 2023 Clair-X. All rights reserved.</div>
+            <div className="flex gap-4">
+              <span className="text-gray-400 text-sm">Built with:</span>
+              <span className="text-gray-400 text-sm">Agentforce</span>
+              <span className="text-gray-400 text-sm">Salesforce</span>
+              <span className="text-gray-400 text-sm">Hugging Face</span>
+              <span className="text-gray-400 text-sm">Vercel v0</span>
+            </div>
           </div>
         </div>
       </footer>
