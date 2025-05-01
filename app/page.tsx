@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ImageGenerator } from "@/components/image-generator"
 
 export default function Home() {
   return (
@@ -19,13 +20,18 @@ export default function Home() {
                 </Link>
               </li>
               <li>
-                <Link href="#about" className="text-gray-300 hover:text-pink-400 transition-colors">
-                  About
+                <Link href="#image-gen" className="text-gray-300 hover:text-pink-400 transition-colors">
+                  Image Gen
                 </Link>
               </li>
               <li>
                 <Link href="#chat" className="text-gray-300 hover:text-pink-400 transition-colors">
                   AI Chat
+                </Link>
+              </li>
+              <li>
+                <Link href="#about" className="text-gray-300 hover:text-pink-400 transition-colors">
+                  About
                 </Link>
               </li>
             </ul>
@@ -49,9 +55,18 @@ export default function Home() {
             <p className="text-xl text-gray-300 max-w-2xl mb-8">
               The next generation AI platform powered by Hugging Face technology
             </p>
-            <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
-              Start Exploring
-            </Button>
+            <div className="flex gap-4">
+              <a href="#image-gen">
+                <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
+                  Generate Images
+                </Button>
+              </a>
+              <a href="#chat">
+                <Button className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-6 text-lg rounded-md">
+                  Try AI Chat
+                </Button>
+              </a>
+            </div>
           </div>
         </section>
 
@@ -96,14 +111,14 @@ export default function Home() {
                     strokeLinejoin="round"
                     className="text-white"
                   >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Multi-Model Support</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Image Generation</h3>
                 <p className="text-gray-300">
-                  Access a variety of specialized AI models for different tasks and requirements.
+                  Create stunning images from text descriptions with our advanced AI image generator.
                 </p>
               </div>
               <div className="bg-gray-700 p-6 rounded-lg">
@@ -127,6 +142,18 @@ export default function Home() {
                 <p className="text-gray-300">Enterprise-grade security with data encryption and privacy controls.</p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Image Generation Section */}
+        <section id="image-gen" className="py-16 px-4">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12 text-pink-400">AI Image Generator</h2>
+            <p className="text-center text-gray-300 max-w-2xl mx-auto mb-8">
+              Transform your ideas into stunning visuals with our AI-powered image generator. Simply describe what you
+              want to see, and watch as Clair-X brings your imagination to life.
+            </p>
+            <ImageGenerator />
           </div>
         </section>
 
