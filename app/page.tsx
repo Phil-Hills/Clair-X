@@ -48,13 +48,20 @@ export default function Home() {
             />
             <h2 className="text-5xl font-bold text-pink-500 mb-6">Clair-X</h2>
             <p className="text-xl text-gray-300 max-w-2xl mb-8">
-              AI image generation for Salesforce users, with built-in audit trails and automation
+              AI image generation for Salesforce users, powered by Agentforce, with built-in audit trails and automation
             </p>
-            <a href="#generator">
-              <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
-                Try the Generator
-              </Button>
-            </a>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <a href="#generator">
+                <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-6 text-lg rounded-md">
+                  Try Agentforce Demo
+                </Button>
+              </a>
+              <a href="#features">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-md">
+                  Salesforce Features
+                </Button>
+              </a>
+            </div>
           </div>
         </section>
 
@@ -84,11 +91,12 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Advanced Image Generation</h3>
                 <p className="text-gray-300">
-                  Create high-quality images using the powerful Stable Diffusion XL model.
+                  Create high-quality images using the powerful Stable Diffusion XL model, all through natural language
+                  prompts in Agentforce.
                 </p>
               </div>
               <div className="bg-gray-700 p-6 rounded-lg">
-                <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -109,11 +117,12 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Salesforce Integration</h3>
                 <p className="text-gray-300">
-                  Attach generated images directly to leads, opportunities, and campaigns in Salesforce.
+                  Attach generated images directly to leads, opportunities, and campaigns in Salesforce with a single
+                  click.
                 </p>
               </div>
               <div className="bg-gray-700 p-6 rounded-lg">
-                <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -126,13 +135,66 @@ export default function Home() {
                     strokeLinejoin="round"
                     className="text-white"
                   >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Complete Audit Trail</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Agentforce Automation</h3>
                 <p className="text-gray-300">
-                  Every generation is logged for compliance and can trigger Salesforce automation.
+                  Trigger Salesforce flows and processes automatically when images are generated and attached to
+                  records.
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Integration Diagram */}
+        <section className="py-16 px-4 bg-gradient-to-b from-gray-900 to-gray-800">
+          <div className="container mx-auto text-center">
+            <h2 className="text-3xl font-bold text-center mb-12 text-pink-400">How It Works</h2>
+            <div className="max-w-4xl mx-auto bg-gray-800 p-6 rounded-lg border border-gray-700">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="bg-gray-700 p-4 rounded-lg">
+                  <div className="w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-white">1</span>
+                  </div>
+                  <h3 className="text-lg font-medium text-white mb-2">Agentforce Chat</h3>
+                  <p className="text-gray-300 text-sm">
+                    User requests an image through natural language in the Agentforce chat interface
+                  </p>
+                </div>
+                <div className="bg-gray-700 p-4 rounded-lg">
+                  <div className="w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-white">2</span>
+                  </div>
+                  <h3 className="text-lg font-medium text-white mb-2">AI Generation</h3>
+                  <p className="text-gray-300 text-sm">
+                    Agentforce processes the request and generates the image using Hugging Face's Stable Diffusion XL
+                  </p>
+                </div>
+                <div className="bg-gray-700 p-4 rounded-lg">
+                  <div className="w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-white">3</span>
+                  </div>
+                  <h3 className="text-lg font-medium text-white mb-2">Salesforce Integration</h3>
+                  <p className="text-gray-300 text-sm">
+                    Image is automatically attached to the relevant Salesforce record and triggers automation
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 flex justify-center">
+                <svg width="600" height="80" viewBox="0 0 600 80" className="max-w-full">
+                  <path
+                    d="M100,40 C150,10 250,10 300,40 C350,70 450,70 500,40"
+                    fill="none"
+                    stroke="#ec4899"
+                    strokeWidth="3"
+                    strokeDasharray="8 4"
+                  />
+                  <circle cx="100" cy="40" r="8" fill="#ec4899" />
+                  <circle cx="300" cy="40" r="8" fill="#ec4899" />
+                  <circle cx="500" cy="40" r="8" fill="#ec4899" />
+                </svg>
               </div>
             </div>
           </div>
@@ -141,10 +203,10 @@ export default function Home() {
         {/* Generator Section */}
         <section id="generator" className="py-16 px-4">
           <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-6 text-pink-400">AI Image Generator</h2>
+            <h2 className="text-3xl font-bold text-center mb-6 text-pink-400">Agentforce + Salesforce Demo</h2>
             <p className="text-center text-gray-300 max-w-2xl mx-auto mb-8">
-              Create AI images on demand, with every output instantly stored, audited, and ready for automation in
-              Salesforce.
+              Experience how Clair-X integrates with Agentforce and Salesforce to create a seamless image generation
+              workflow.
             </p>
             <ImageGenerator />
           </div>
@@ -154,32 +216,52 @@ export default function Home() {
         <section id="about" className="py-16 bg-gray-800 px-4">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12 text-pink-400">About Clair-X</h2>
-            <div className="max-w-3xl mx-auto">
-              <div className="bg-gray-700 p-6 rounded-lg mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-white">Inspiration</h3>
-                <p className="text-gray-300">
-                  Most commercial AI services censor creative output. I wanted full artistic control without leaving the
-                  Salesforce environment I already use to run my business.
-                </p>
+            <div className="max-w-3xl mx-auto bg-gray-700 p-8 rounded-lg">
+              <h3 className="text-2xl font-semibold mb-6 text-white text-center">Unleash Your Creative Potential</h3>
+              <p className="text-gray-300 text-lg mb-6">
+                Clair-X is the ultimate AI image generation solution built specifically for Salesforce users. Unlike
+                other image generation tools, Clair-X gives you complete creative freedom with no content filters or
+                restrictions.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-gray-800 p-5 rounded-lg">
+                  <h4 className="text-xl font-medium text-pink-400 mb-3">Complete Creative Freedom</h4>
+                  <p className="text-gray-300">
+                    Generate any image you can imagine without the frustrating content restrictions that limit your
+                    creativity on other platforms.
+                  </p>
+                </div>
+                <div className="bg-gray-800 p-5 rounded-lg">
+                  <h4 className="text-xl font-medium text-blue-400 mb-3">Seamless Salesforce Storage</h4>
+                  <p className="text-gray-300">
+                    Every image is automatically saved and organized in your Salesforce instance, making them instantly
+                    available across your entire organization.
+                  </p>
+                </div>
               </div>
 
-              <div className="bg-gray-700 p-6 rounded-lg mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-white">Technical Build</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
-                  <li>Agent built with Salesforce Agent Builder</li>
-                  <li>Secure HTTPS call from Salesforce Apex → Python FastAPI relay → Hugging Face API</li>
-                  <li>Signed URLs ensure images upload directly to Salesforce Files</li>
-                  <li>Optional Vercel v0 front-end mirrors the agent for public demos</li>
-                </ul>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-gray-800 p-5 rounded-lg">
+                  <h4 className="text-xl font-medium text-pink-400 mb-3">Natural Language Interface</h4>
+                  <p className="text-gray-300">
+                    Simply describe what you want in plain English through the Agentforce chat interface - no complex
+                    prompting required.
+                  </p>
+                </div>
+                <div className="bg-gray-800 p-5 rounded-lg">
+                  <h4 className="text-xl font-medium text-blue-400 mb-3">Enterprise-Ready</h4>
+                  <p className="text-gray-300">
+                    Built with business users in mind, with comprehensive audit trails, permissions, and the security
+                    you expect from Salesforce.
+                  </p>
+                </div>
               </div>
 
-              <div className="bg-gray-700 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4 text-white">Next Steps</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
-                  <li>Package for AppExchange so other solo builders can install in minutes</li>
-                  <li>Add text-and-audio generation via Hugging Face multi-modal endpoints</li>
-                  <li>Introduce voice prompts inside Agentforce</li>
-                </ul>
+              <div className="mt-8 text-center">
+                <Button className="bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 text-white px-8 py-3 text-lg rounded-md">
+                  Start Creating Without Limits
+                </Button>
               </div>
             </div>
           </div>
@@ -193,10 +275,10 @@ export default function Home() {
               <Image src="/clair-x-logo.jpeg" alt="Clair-X Logo" width={30} height={30} className="rounded mr-2" />
               <span className="text-pink-500 font-bold">Clair-X</span>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4 justify-center">
               <span className="text-gray-400 text-sm">Built with:</span>
-              <span className="text-gray-400 text-sm">Agentforce</span>
-              <span className="text-gray-400 text-sm">Salesforce</span>
+              <span className="text-blue-400 text-sm">Salesforce</span>
+              <span className="text-pink-400 text-sm">Agentforce</span>
               <span className="text-gray-400 text-sm">Hugging Face</span>
               <span className="text-gray-400 text-sm">Vercel v0</span>
             </div>

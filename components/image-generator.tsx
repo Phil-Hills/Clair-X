@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
+import { AgentforceChat } from "./agentforce-chat"
+import { SalesforcePanel } from "./salesforce-panel"
 
 type AuditLogEntry = {
   timestamp: string
@@ -24,18 +24,15 @@ export function ImageGenerator() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([])
-  const [selectedRecord, setSelectedRecord] = useState("opportunity")
-  const [recordId, setRecordId] = useState("OPP-00123")
   const imageRef = useRef<HTMLImageElement>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!prompt.trim()) {
+  const generateImage = async (promptText: string) => {
+    if (!promptText.trim()) {
       setError("Please enter a prompt")
       return
     }
 
+    setPrompt(promptText)
     setLoading(true)
     setError(null)
 
@@ -45,7 +42,7 @@ export function ImageGenerator() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: promptText }),
       })
 
       if (!response.ok) {
@@ -64,7 +61,7 @@ export function ImageGenerator() {
         setAuditLogs((prev) => [
           {
             timestamp: new Date().toISOString(),
-            prompt: prompt,
+            prompt: promptText,
             userId: "demo-user",
             success: true,
           },
@@ -79,7 +76,7 @@ export function ImageGenerator() {
       setAuditLogs((prev) => [
         {
           timestamp: new Date().toISOString(),
-          prompt: prompt,
+          prompt: promptText,
           userId: "demo-user",
           success: false,
         },
@@ -88,6 +85,11 @@ export function ImageGenerator() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    generateImage(prompt)
   }
 
   const handleSaveToSalesforce = () => {
@@ -101,26 +103,75 @@ export function ImageGenerator() {
     setAuditLogs((prev) => [newLog, ...prev])
 
     // Show success message
-    setError(`Image saved to ${selectedRecord} ${recordId} in Salesforce`)
+    setError(`Image saved to Salesforce successfully`)
     setTimeout(() => setError(null), 3000)
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <Tabs defaultValue="generator" className="w-full">
+    <div className="w-full max-w-6xl mx-auto">
+      <Tabs defaultValue="agentforce" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-gray-700">
-          <TabsTrigger value="generator" className="data-[state=active]:bg-pink-600">
-            Generator
+          <TabsTrigger value="agentforce" className="data-[state=active]:bg-pink-600">
+            Agentforce
           </TabsTrigger>
-          <TabsTrigger value="salesforce" className="data-[state=active]:bg-pink-600">
-            Salesforce
+          <TabsTrigger value="manual" className="data-[state=active]:bg-pink-600">
+            Manual Generator
           </TabsTrigger>
           <TabsTrigger value="audit" className="data-[state=active]:bg-pink-600">
             Audit Log
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="generator" className="mt-4">
+        <TabsContent value="agentforce" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AgentforceChat onGenerateImage={generateImage} />
+            <div className="space-y-4">
+              <SalesforcePanel selectedImage={image} />
+              {image && (
+                <Card className="overflow-hidden bg-gray-700 border-gray-600">
+                  <CardContent className="p-0">
+                    <div className="relative h-64 w-full">
+                      <img
+                        ref={imageRef}
+                        src={image || "/placeholder.svg"}
+                        alt="Generated image"
+                        className="object-cover rounded-lg w-full h-full"
+                      />
+                    </div>
+                    <div className="p-3 flex justify-between items-center">
+                      <div className="text-sm text-gray-300 truncate max-w-[70%]">Prompt: {prompt}</div>
+                      <Button
+                        onClick={handleSaveToSalesforce}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Attach to Record
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {loading && (
+                <div className="h-64 w-full flex items-center justify-center bg-gray-700 rounded-lg">
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500 mb-4"></div>
+                    <p className="text-gray-300">Generating your image...</p>
+                    <p className="text-gray-400 text-sm mt-2">This may take up to 30 seconds</p>
+                  </div>
+                </div>
+              )}
+              {error && (
+                <Alert
+                  className={`${error.includes("saved to") ? "bg-green-900/30 border-green-800 text-green-300" : "bg-red-900/30 border-red-800 text-red-300"}`}
+                >
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="manual" className="mt-4">
           <form onSubmit={handleSubmit} className="mb-6">
             <div className="flex gap-2">
               <Input
@@ -211,62 +262,6 @@ export function ImageGenerator() {
               </Button>
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="salesforce" className="mt-4">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="record-type">Record Type</Label>
-                  <Select value={selectedRecord} onValueChange={setSelectedRecord}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Select record type" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600 text-white">
-                      <SelectItem value="lead">Lead</SelectItem>
-                      <SelectItem value="opportunity">Opportunity</SelectItem>
-                      <SelectItem value="campaign">Campaign</SelectItem>
-                      <SelectItem value="account">Account</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="record-id">Record ID</Label>
-                  <Input
-                    id="record-id"
-                    value={recordId}
-                    onChange={(e) => setRecordId(e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <Button
-                    onClick={handleSaveToSalesforce}
-                    disabled={!image}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Attach Image to Salesforce Record
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="mt-6">
-            <h3 className="text-lg font-medium text-white mb-4">How It Works</h3>
-            <div className="bg-gray-800 rounded-lg p-4 text-gray-300">
-              <ol className="list-decimal list-inside space-y-2">
-                <li>Generate an image using the Generator tab</li>
-                <li>Select a Salesforce record type and ID</li>
-                <li>Click "Attach Image to Salesforce Record"</li>
-                <li>The image is stored in Salesforce Files and linked to your record</li>
-                <li>All actions are logged for compliance and automation</li>
-              </ol>
-            </div>
-          </div>
         </TabsContent>
 
         <TabsContent value="audit" className="mt-4">
