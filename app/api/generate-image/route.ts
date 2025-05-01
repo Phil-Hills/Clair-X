@@ -15,6 +15,31 @@ export async function POST(req: Request) {
 
     console.log("Generating image with prompt:", prompt)
 
+    // First, moderate the prompt
+    const moderationResponse = await fetch(`${new URL(req.url).origin}/api/moderate-content`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: prompt,
+        contentType: "prompt",
+      }),
+    })
+
+    const moderationResult = await moderationResponse.json()
+
+    // If content is flagged as unsafe, return an error
+    if (!moderationResult.safe) {
+      return NextResponse.json(
+        {
+          error: "Prompt contains content that violates our guidelines",
+          moderationResult,
+        },
+        { status: 400 },
+      )
+    }
+
     // Use the standard Hugging Face Inference API
     const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL_ID}`, {
       method: "POST",

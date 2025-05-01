@@ -3,8 +3,9 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Clair-X",
-  description: "Next-generation AI platform",
+  title: "Clair-X | Media Creation Platform",
+  description:
+    "Advanced media creation and management platform with powerful image generation, enhancement, and sharing capabilities",
     generator: 'v0.dev'
 }
 
@@ -15,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="bg-gray-900">{children}</body>
     </html>
   )
 }
