@@ -1,28 +1,21 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Clair X - AI Image Generator",
-  description: "Generate stunning images with AI",
+  title: "Clair-X",
+  description: "Next-generation AI platform",
     generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        {children}
-        <Toaster />
-      </body>
+      <body>{children}</body>
     </html>
   )
 }
