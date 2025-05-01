@@ -6,6 +6,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function ImageGenerator() {
   const [prompt, setPrompt] = useState("")
@@ -41,6 +42,7 @@ export function ImageGenerator() {
       const data = await response.json()
       setImage(data.image)
     } catch (err) {
+      console.error("Error generating image:", err)
       setError(err instanceof Error ? err.message : "An unknown error occurred")
     } finally {
       setLoading(false)
@@ -62,13 +64,22 @@ export function ImageGenerator() {
             {loading ? "Generating..." : "Generate"}
           </Button>
         </div>
-        {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
       </form>
+
+      {error && (
+        <Alert className="mb-6 bg-red-900/30 border-red-800 text-red-300">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="flex justify-center">
         {loading ? (
-          <div className="h-64 w-64 flex items-center justify-center bg-gray-700 rounded-lg">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+          <div className="h-64 w-64 sm:h-96 sm:w-96 flex items-center justify-center bg-gray-700 rounded-lg">
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500 mb-4"></div>
+              <p className="text-gray-300">Generating your image...</p>
+              <p className="text-gray-400 text-sm mt-2">This may take up to 30 seconds</p>
+            </div>
           </div>
         ) : image ? (
           <Card className="overflow-hidden bg-gray-700 border-gray-600">
@@ -84,11 +95,45 @@ export function ImageGenerator() {
             </CardContent>
           </Card>
         ) : (
-          <div className="h-64 w-64 flex items-center justify-center bg-gray-700 rounded-lg">
-            <p className="text-gray-400 text-center px-4">Your generated image will appear here</p>
+          <div className="h-64 w-64 sm:h-96 sm:w-96 flex items-center justify-center bg-gray-700 rounded-lg">
+            <div className="text-center px-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mx-auto mb-4 text-gray-500"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <p className="text-gray-400">Enter a prompt above to generate an image</p>
+            </div>
           </div>
         )}
       </div>
+
+      {image && (
+        <div className="mt-4 flex justify-center">
+          <Button
+            onClick={() => {
+              const link = document.createElement("a")
+              link.href = image
+              link.download = `clair-x-${Date.now()}.jpg`
+              link.click()
+            }}
+            className="bg-gray-700 hover:bg-gray-600 text-white"
+          >
+            Download Image
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
